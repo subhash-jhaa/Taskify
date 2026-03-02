@@ -1,59 +1,67 @@
 import { Request, Response } from "express";
-import taskModel from "../models/taskModel.js";
+import prisma from "../config/prisma.js";
+import { TaskStatus, Prisma } from "@prisma/client";
 
 // Create a new task
-export const createTask = async (req: Request, res: Response) => {
+export const createTask = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const { title, description, status, userId } = req.body;
+        const { title, description, status } = req.body;
+        const userId = req.userId;
 
         if (!title) {
             return res.status(400).json({ success: false, message: "Title is required" });
         }
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
 
-        const task = new taskModel({
-            title,
-            description,
-            status,
-            user: userId
+        const taskStatus = status ? (status.toUpperCase().replace('-', '_') as TaskStatus) : TaskStatus.TODO;
+
+        const task = await prisma.task.create({
+            data: { title, description, status: taskStatus, userId }
         });
 
-        await task.save();
-        res.status(201).json({ success: true, message: "Task created successfully", task });
+        return res.status(201).json({ success: true, message: "Task created successfully", task });
     } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// Get all tasks for the logged-in user (with Search, Filter, and Pagination)
-export const getTasks = async (req: Request, res: Response) => {
+// Get all tasks with Search, Filter, and Pagination
+export const getTasks = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const { userId } = req.body;
-        const { search, status, page = 1, limit = 10 } = req.query;
-
-        const query: any = { user: userId };
-
-        // Search by title (regex)
-        if (search) {
-            query.title = { $regex: search as string, $options: "i" };
-        }
-
-        // Filter by status
-        if (status) {
-            query.status = status;
-        }
+        const userId = req.userId;
+        const { search, status, page = '1', limit = '10' } = req.query;
 
         const pageNum = parseInt(page as string);
         const limitNum = parseInt(limit as string);
         const skip = (pageNum - 1) * limitNum;
 
-        const tasks = await taskModel.find(query)
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limitNum);
+        const where: any = { userId };
 
-        const totalTasks = await taskModel.countDocuments(query);
+        if (search) {
+            where.title = { contains: search as string, mode: 'insensitive' };
+        }
 
-        res.status(200).json({
+        if (status) {
+            // Accept both "todo", "in-progress" style and "TODO", "IN_PROGRESS" style
+            const statusKey = (status as string).toUpperCase().replace('-', '_');
+            if (Object.values(TaskStatus).includes(statusKey as TaskStatus)) {
+                where.status = statusKey as TaskStatus;
+            }
+        }
+
+        const [tasks, totalTasks] = await prisma.$transaction([
+            prisma.task.findMany({
+                where,
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: limitNum,
+            }),
+            prisma.task.count({ where }),
+        ]);
+
+        return res.status(200).json({
             success: true,
             tasks,
             pagination: {
@@ -64,93 +72,134 @@ export const getTasks = async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // Get a single task by ID
-export const getTaskById = async (req: Request, res: Response) => {
+export const getTaskById = async (req: Request, res: Response): Promise<Response> => {
     try {
         const { id } = req.params;
-        const { userId } = req.body;
+        const userId = req.userId;
 
-        const task = await taskModel.findOne({ _id: id, user: userId });
+        const task = await prisma.task.findFirst({ where: { id, userId } });
 
         if (!task) {
             return res.status(404).json({ success: false, message: "Task not found" });
         }
 
-        res.status(200).json({ success: true, task });
+        return res.status(200).json({ success: true, task });
     } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // Update a task
-export const updateTask = async (req: Request, res: Response) => {
+export const updateTask = async (req: Request, res: Response): Promise<Response> => {
     try {
         const { id } = req.params;
-        const { userId, title, description, status } = req.body;
+        const { title, description, status } = req.body;
+        const userId = req.userId;
 
-        const task = await taskModel.findOneAndUpdate(
-            { _id: id, user: userId },
-            { title, description, status },
-            { new: true, runValidators: true }
-        );
-
-        if (!task) {
+        const existing = await prisma.task.findFirst({ where: { id, userId } });
+        if (!existing) {
             return res.status(404).json({ success: false, message: "Task not found" });
         }
 
-        res.status(200).json({ success: true, message: "Task updated successfully", task });
+        const taskStatus = status
+            ? (status.toUpperCase().replace('-', '_') as TaskStatus)
+            : existing.status;
+
+        const task = await prisma.task.update({
+            where: { id },
+            data: { title, description, status: taskStatus }
+        });
+
+        return res.status(200).json({ success: true, message: "Task updated successfully", task });
     } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // Delete a task
-export const deleteTask = async (req: Request, res: Response) => {
+export const deleteTask = async (req: Request, res: Response): Promise<Response> => {
     try {
         const { id } = req.params;
-        const { userId } = req.body;
+        const userId = req.userId;
 
-        const task = await taskModel.findOneAndDelete({ _id: id, user: userId });
-
-        if (!task) {
+        const existing = await prisma.task.findFirst({ where: { id, userId } });
+        if (!existing) {
             return res.status(404).json({ success: false, message: "Task not found" });
         }
 
-        res.status(200).json({ success: true, message: "Task deleted successfully" });
+        await prisma.task.delete({ where: { id } });
+
+        return res.status(200).json({ success: true, message: "Task deleted successfully" });
     } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// Toggle task status
-export const toggleTaskStatus = async (req: Request, res: Response) => {
+// Toggle task status: TODO → IN_PROGRESS → COMPLETED → TODO
+export const toggleTaskStatus = async (req: Request, res: Response): Promise<Response> => {
     try {
         const { id } = req.params;
-        const { userId } = req.body;
+        const userId = req.userId;
 
-        const task = await taskModel.findOne({ _id: id, user: userId });
+        const task = await prisma.task.findFirst({ where: { id, userId } });
 
         if (!task) {
             return res.status(404).json({ success: false, message: "Task not found" });
         }
 
-        // Cycle through statuses: todo -> in-progress -> completed -> todo
-        const statusMap: Record<string, "todo" | "in-progress" | "completed"> = {
-            "todo": "in-progress",
-            "in-progress": "completed",
-            "completed": "todo"
+        const statusCycle: Record<TaskStatus, TaskStatus> = {
+            [TaskStatus.TODO]: TaskStatus.IN_PROGRESS,
+            [TaskStatus.IN_PROGRESS]: TaskStatus.COMPLETED,
+            [TaskStatus.COMPLETED]: TaskStatus.TODO,
         };
 
-        task.status = statusMap[task.status] || "todo";
-        await task.save();
+        const newStatus = statusCycle[task.status];
 
-        res.status(200).json({ success: true, message: `Task moved to ${task.status}`, task });
+        const updatedTask = await prisma.task.update({
+            where: { id },
+            data: { status: newStatus }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: `Task moved to ${newStatus}`,
+            task: updatedTask
+        });
     } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
+// Get task statistics for dashboard
+export const getTaskStats = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const userId = req.userId;
+
+        const stats = await prisma.task.groupBy({
+            by: ['status'],
+            where: { userId },
+            _count: {
+                id: true
+            }
+        });
+
+        const totalTasks = await prisma.task.count({ where: { userId } });
+
+        // Format stats for frontend
+        const formattedStats = {
+            total: totalTasks,
+            todo: stats.find((s: any) => s.status === 'TODO')?._count.id || 0,
+            inProgress: stats.find((s: any) => s.status === 'IN_PROGRESS')?._count.id || 0,
+            completed: stats.find((s: any) => s.status === 'COMPLETED')?._count.id || 0,
+        };
+
+        return res.status(200).json({ success: true, stats: formattedStats });
+    } catch (error: any) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
