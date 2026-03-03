@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useState } from 'react';
+import { ModeToggle } from '@/components/mode-toggle';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, logout } = useAuth();
@@ -20,12 +21,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     ];
 
     const SidebarContent = () => (
-        <div className="flex flex-col h-full bg-background">
-            <div className="flex items-center gap-3 mb-10 px-2 mt-4 md:mt-0">
-                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                    <ListTodo className="text-primary-foreground w-6 h-6" />
+        <div className="flex flex-col h-full bg-background/50">
+            <div className="flex items-center justify-between mb-10 px-2 mt-4 md:mt-0">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                        <ListTodo className="text-primary-foreground w-6 h-6" />
+                    </div>
+                    <span className="text-2xl font-bold gradient-text">Taskify</span>
                 </div>
-                <span className="text-2xl font-bold gradient-text">Taskify</span>
+                <ModeToggle />
             </div>
 
             <nav className="flex-1 space-y-2">
@@ -72,7 +76,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
 
     return (
-        <div className="min-h-screen bg-background flex flex-col md:flex-row">
+        <div className="min-h-screen bg-background flex flex-col md:flex-row transition-colors duration-300">
             {/* Desktop Sidebar */}
             <aside className="hidden md:flex w-64 glass border-r border-border min-h-screen p-6 flex-col shrink-0">
                 <SidebarContent />
@@ -84,19 +88,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <ListTodo className="text-primary w-6 h-6" />
                     <span className="text-xl font-bold gradient-text">Taskify</span>
                 </div>
-                <Sheet open={open} onOpenChange={setOpen}>
-                    <SheetTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                            <Menu className="w-6 h-6" />
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left" className="p-6 w-72">
-                        <SheetHeader className="text-left mb-4">
-                            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                        </SheetHeader>
-                        <SidebarContent />
-                    </SheetContent>
-                </Sheet>
+                <div className="flex items-center gap-2">
+                    <ModeToggle />
+                    <Sheet open={open} onOpenChange={setOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <Menu className="w-6 h-6" />
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="p-6 w-72">
+                            <SheetHeader className="text-left mb-4">
+                                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                            </SheetHeader>
+                            <SidebarContent />
+                        </SheetContent>
+                    </Sheet>
+                </div>
             </header>
 
             {/* Main Content */}
@@ -126,4 +133,3 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
     );
 }
-
