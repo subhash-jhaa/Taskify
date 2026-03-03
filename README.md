@@ -4,10 +4,15 @@ Taskify is a high-performance, full-stack task management ecosystem built with *
 
 ![Taskify Dashboard](https://github.com/user-attachments/assets/...) <!-- Placeholder for actual screenshot -->
 
+## 🔗 Live Links
+- **Application**: [https://taskify-by-subhash.vercel.app/](https://taskify-by-subhash.vercel.app/)
+- **Backend API**: [https://taskify-2zoy.onrender.com/api](https://taskify-2zoy.onrender.com/api)
+
 ## ✨ Key Features
 
 - **🔐 Advanced Authentication**: Secure session management using JWT and HTTP-only cookies.
 - **📧 OTP-Based Communication**: Robust password reset and account verification via email (SMTP).
+- **🌓 Light/Dark Mode**: Seamless theme switching with system detection and persistence.
 - **📋 Smart Task Tracking**: Create, categorize, and track tasks with a dynamic Kanban-style interface.
 - **🎨 Premium UI/UX**: Crafted with **Shadcn UI** and **Tailwind CSS 4** for a sleek, responsive experience.
 - **⚡ Real-time Updates**: Optimized data fetching and synchronization with **TanStack Query**.
