@@ -1,11 +1,15 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Task, TaskStatus } from '@/types/task';
 import { Loader2, Save, X, Type, AlignLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const taskSchema = z.object({
     title: z.string().min(1, 'Title is required').max(100),
@@ -23,7 +27,7 @@ interface TaskFormProps {
 }
 
 export default function TaskForm({ initialData, onSubmit, onCancel, isSubmitting }: TaskFormProps) {
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    const { register, handleSubmit, control, formState: { errors } } = useForm({
         resolver: zodResolver(taskSchema),
         defaultValues: {
             title: initialData?.title || '',
@@ -35,74 +39,93 @@ export default function TaskForm({ initialData, onSubmit, onCancel, isSubmitting
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
-                <label className="text-sm font-semibold ml-1 flex items-center gap-2">
+                <Label htmlFor="title" className="flex items-center gap-2">
                     <Type className="w-4 h-4 text-primary" />
                     Task Title
-                </label>
-                <input
+                </Label>
+                <Input
+                    id="title"
                     {...register('title')}
                     placeholder="e.g. Design System Implementation"
-                    className={`w-full bg-accent/30 border ${errors.title ? 'border-red-500' : 'border-border/50'} rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all`}
+                    className={errors.title ? 'border-destructive focus-visible:ring-destructive' : ''}
                 />
-                {errors.title && <p className="text-xs text-red-500 ml-1">{errors.title.message}</p>}
+                {errors.title && <p className="text-xs text-destructive ml-1">{errors.title.message}</p>}
             </div>
 
             <div className="space-y-2">
-                <label className="text-sm font-semibold ml-1 flex items-center gap-2">
+                <Label htmlFor="description" className="flex items-center gap-2">
                     <AlignLeft className="w-4 h-4 text-primary" />
                     Description
-                </label>
-                <textarea
+                </Label>
+                <Textarea
+                    id="description"
                     {...register('description')}
                     rows={4}
                     placeholder="Describe the task details..."
-                    className="w-full bg-accent/30 border border-border/50 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all resize-none"
+                    className="resize-none"
                 />
             </div>
 
-            <div className="space-y-2">
-                <label className="text-sm font-semibold ml-1">Status</label>
-                <div className="flex bg-accent/30 p-1 rounded-xl border border-border/50">
-                    {(['TODO', 'IN_PROGRESS', 'COMPLETED'] as TaskStatus[]).map((s) => (
-                        <label key={s} className="flex-1 cursor-pointer">
-                            <input
-                                type="radio"
-                                {...register('status')}
-                                value={s}
-                                className="sr-only peer"
-                            />
-                            <div className="py-2.5 text-center text-xs font-bold rounded-lg transition-all text-muted-foreground peer-checked:bg-primary peer-checked:text-primary-foreground peer-checked:shadow-md">
-                                {s.replace('_', ' ')}
-                            </div>
-                        </label>
-                    ))}
-                </div>
+            <div className="space-y-3">
+                <Label>Status</Label>
+                <Controller
+                    control={control}
+                    name="status"
+                    render={({ field }) => (
+                        <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex flex-wrap gap-2"
+                        >
+                            {(['TODO', 'IN_PROGRESS', 'COMPLETED'] as TaskStatus[]).map((s) => (
+                                <div key={s} className="flex-1 min-w-[100px]">
+                                    <RadioGroupItem
+                                        value={s}
+                                        id={`status-${s}`}
+                                        className="sr-only"
+                                    />
+                                    <Label
+                                        htmlFor={`status-${s}`}
+                                        className={`block w-full py-2.5 text-center text-xs font-bold rounded-lg border cursor-pointer transition-all ${field.value === s
+                                            ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                                            : 'bg-muted/50 text-muted-foreground border-transparent hover:bg-muted'
+                                            }`}
+                                    >
+                                        {s.replace('_', ' ')}
+                                    </Label>
+                                </div>
+                            ))}
+                        </RadioGroup>
+                    )}
+                />
             </div>
 
             <div className="flex items-center gap-3 pt-4">
-                <button
+                <Button
                     type="button"
+                    variant="outline"
                     onClick={onCancel}
-                    className="flex-1 py-3 px-6 rounded-xl font-bold bg-accent/50 hover:bg-accent border border-border/50 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 h-12 rounded-xl font-bold"
                 >
-                    <X className="w-5 h-5" />
+                    <X className="w-5 h-5 mr-2" />
                     Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-[2] py-3 px-6 rounded-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-70"
+                    className="flex-[2] h-12 rounded-xl font-bold shadow-lg shadow-primary/20"
                 >
                     {isSubmitting ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                         <>
-                            <Save className="w-5 h-5" />
+                            <Save className="w-5 h-5 mr-2" />
                             {initialData?.id ? 'Update Task' : 'Create Task'}
                         </>
                     )}
-                </button>
+                </Button>
             </div>
         </form>
     );
 }
+
