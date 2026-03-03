@@ -45,13 +45,14 @@ export const register = async (req: Request, res: Response) => {
 
         try {
             await transporter.sendMail({
-                from: process.env.SENDER_EMAIL,
+                from: `"Taskify" <${process.env.SENDER_EMAIL}>`,
                 to: email,
                 subject: 'Welcome to Taskify!',
                 html: `<h2>Welcome, ${name}!</h2><p>Thanks for signing up. Start managing your tasks now.</p>`
             })
+            console.log(`✅ Welcome email sent to ${email}`);
         } catch (emailErr) {
-            console.log('welcome email failed to send:', emailErr)
+            console.error('❌ welcome email failed to send:', emailErr)
         }
 
         return res.status(201).json({ success: true, message: "User registered successfully" });
@@ -100,7 +101,7 @@ export const logout = async (req: Request, res: Response) => {
         const userId = req.userId;
         if (userId) {
             await prisma.user.update({
-                where: { id: userId },
+                where: { id: userId as string },
                 data: { refreshToken: null }
             });
         }
@@ -148,7 +149,7 @@ export const refresh = async (req: Request, res: Response) => {
 
 export const sendVerifyOtp = async (req: Request, res: Response) => {
     try {
-        const user = await prisma.user.findUnique({ where: { id: req.userId } })
+        const user = await prisma.user.findUnique({ where: { id: req.userId as string } })
 
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
@@ -168,7 +169,7 @@ export const sendVerifyOtp = async (req: Request, res: Response) => {
 
         try {
             await transporter.sendMail({
-                from: process.env.SENDER_EMAIL,
+                from: `"Taskify" <${process.env.SENDER_EMAIL}>`,
                 to: user.email,
                 subject: 'Your Account Verification OTP',
                 html: `<h2>Verify your email</h2>
@@ -177,8 +178,9 @@ export const sendVerifyOtp = async (req: Request, res: Response) => {
                        <p>This OTP is valid for 24 hours.</p>
                        <p>Best regards,<br>The Taskify Team</p>`
             });
+            console.log(`✅ Verification OTP sent to ${user.email}`);
         } catch (emailError) {
-            console.error('Email sending failed:', emailError);
+            console.error('❌ Email sending failed (Verify OTP):', emailError);
             return res.status(500).json({ success: false, message: "Failed to send OTP email" });
         }
 
@@ -197,7 +199,7 @@ export const verifyEmail = async (req: Request, res: Response): Promise<Response
         return res.status(400).json({ success: false, message: "Missing details" });
     }
     try {
-        const user = await prisma.user.findUnique({ where: { id: userId } });
+        const user = await prisma.user.findUnique({ where: { id: userId as string } });
 
         if (!user) {
             return res.status(400).json({ success: false, message: "User not found" });
@@ -212,7 +214,7 @@ export const verifyEmail = async (req: Request, res: Response): Promise<Response
         }
 
         await prisma.user.update({
-            where: { id: userId },
+            where: { id: userId as string },
             data: { isAccountVerified: true, verifyOtp: null, verifyOtpExpiry: null }
         });
 
@@ -253,7 +255,7 @@ export const sendResetOtp = async (req: Request, res: Response): Promise<Respons
 
         try {
             await transporter.sendMail({
-                from: process.env.SENDER_EMAIL,
+                from: `"Taskify" <${process.env.SENDER_EMAIL}>`,
                 to: user.email,
                 subject: 'Your Password Reset OTP',
                 html: `<h2>Password Reset Request</h2>
@@ -262,8 +264,9 @@ export const sendResetOtp = async (req: Request, res: Response): Promise<Respons
                        <p>This OTP is valid for 10 minutes.</p>
                        <p>Best regards,<br>The Taskify Team</p>`
             });
+            console.log(` Reset OTP sent to ${user.email}`);
         } catch (emailError) {
-            console.error('Email sending failed:', emailError);
+            console.error(' Email sending failed (Reset OTP):', emailError);
             return res.status(500).json({ success: false, message: "Failed to send reset OTP email" });
         }
 

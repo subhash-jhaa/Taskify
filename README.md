@@ -1,83 +1,92 @@
-# Taskify - Task Management Application
+# 🚀 Taskify - Modern Task Management
 
-Taskify is a modern, full-stack task management application designed to help users organize their work efficiently. It features a sleek interface, secure authentication, and robust task tracking capabilities.
+Taskify is a high-performance, full-stack task management ecosystem built with **Next.js 16**, **Express**, and **Prisma**. It delivers a premium user experience with a focus on speed, security, and elegant design.
 
-## 🚀 Features
+![Taskify Dashboard](https://github.com/user-attachments/assets/...) <!-- Placeholder for actual screenshot -->
 
-- **User Authentication**: Secure signup and login with JWT and cookie-based sessions.
-- **Task Management**: Create, update, delete, and track your tasks.
-- **Modern UI**: A responsive and beautiful interface built with Next.js and Tailwind CSS.
-- **Smooth Animations**: Interactive experience powered by Framer Motion.
-- **Email Notifications**: Integrated email services for important updates.
-- **Data Integrity**: Reliable data management with Prisma and PostgreSQL.
+## ✨ Key Features
 
-## 🛠️ Tech Stack
+- **🔐 Advanced Authentication**: Secure session management using JWT and HTTP-only cookies.
+- **📧 OTP-Based Communication**: Robust password reset and account verification via email (SMTP).
+- **📋 Smart Task Tracking**: Create, categorize, and track tasks with a dynamic Kanban-style interface.
+- **🎨 Premium UI/UX**: Crafted with **Shadcn UI** and **Tailwind CSS 4** for a sleek, responsive experience.
+- **⚡ Real-time Updates**: Optimized data fetching and synchronization with **TanStack Query**.
+- **📱 Universal Compatibility**: Fully responsive design optimized for mobile, tablet, and desktop.
 
-### Frontend
-- **Framework**: [Next.js 16 (App Router)](https://nextjs.org/)
+## 🛠️ Technology Ecosystem
+
+### **Frontend (The Experience)**
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router & Turbopack)
+- **UI Components**: [Shadcn UI](https://ui.shadcn.com/) & [Radix UI](https://www.radix-ui.com/)
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
-- **State Management**: [React Query (TanStack Query)](https://tanstack.com/query/latest)
-- **Form Handling**: [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
 - **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Icons**: [Lucide React](https://lucide.dev/)
+- **Form Engine**: [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
 
-### Backend
-- **Runtime**: [Node.js](https://nodejs.org/)
-- **Framework**: [Express.js](https://expressjs.com/)
-- **ORM**: [Prisma](https://www.prisma.io/)
-- **Database**: [PostgreSQL](https://www.postgresql.org/)
-- **Authentication**: JWT & Cookie-parser
-- **Notifications**: Nodemailer
+### **Backend (The Engine)**
+- **Runtime**: [Node.js](https://nodejs.org/) & [TypeScript](https://www.typescriptlang.org/)
+- **Server**: [Express.js](https://expressjs.com/)
+- **Database Architecture**: [Prisma ORM](https://www.prisma.io/) with [PostgreSQL](https://www.postgresql.org/)
+- **Mailing**: [Nodemailer](https://nodemailer.com/) with SMTP Relay (Brevo)
 
-## 📦 Project Structure
+---
+
+## 🏗️ Architecture Overview
 
 ```text
 Task-Management/
-├── client/           # Frontend Next.js application
-│   ├── src/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── app/
-│   └── ...
-├── server/           # Backend Express application
-│   ├── controllers/
-│   ├── routes/
-│   ├── config/
-│   ├── prisma/
-│   └── ...
-└── README.md         # Root documentation
+├── client/           # Next.js Frontend (Vercel)
+│   ├── src/components/ # Reusable Shadcn UI & Custom Components
+│   ├── src/app/        # App Router Pages & Layouts
+│   └── src/lib/        # API Clients & Utilities
+├── server/           # Express Backend (Render/Railway)
+│   ├── controllers/    # Business Logic & Auth Handling
+│   ├── prisma/         # Schema & Migrations
+│   ├── config/         # Nodemailer & Database Config
+│   └── routes/         # API Endpoint Definitions
+└── README.md         # Global Documentation
 ```
 
-## 🏁 Getting Started
+---
 
-### Prerequisites
-- Node.js (v18 or later)
-- PostgreSQL database
-- npm or yarn
+## 🚦 Getting Started
 
-### Installation
+### **Prerequisites**
+- Node.js v18+
+- PostgreSQL Instance (Local or Supabase)
+- SMTP Credentials (Brevo/Gmail)
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd Task-Management
-   ```
+### **1. Clone & Install**
+```bash
+git clone https://github.com/subhash-jhaa/Taskify.git
+cd Task-Management
+```
 
-2. **Setup Server:**
-   ```bash
-   cd server
-   npm install
-   # Create a .env file with DATABASE_URL and other secrets
-   npx prisma generate
-   npm run dev
-   ```
+### **2. Configure Backend**
+Navigate to `/server` and create a `.env` file:
+```env
+DATABASE_URL="your_postgresql_url"
+JWT_ACCESS_SECRET="your_secret"
+SMTP_USER="your_smtp_user"
+SMTP_PASS="your_smtp_password"
+SENDER_EMAIL="your_verified_sender"
+```
+```bash
+npm install
+npx prisma generate
+npm run dev
+```
 
-3. **Setup Client:**
-   ```bash
-   cd ../client
-   npm install
-   npm run dev
-   ```
+### **3. Configure Frontend**
+Navigate to `/client` and create a `.env.local` file:
+```env
+NEXT_PUBLIC_API_URL="http://localhost:4000/api"
+```
+```bash
+npm install
+npm run dev
+```
 
-## 📜 License
-This project is licensed under the ISC License.
+---
+
+## 📜 License & Acknowledgements
+Built by [Subhash Jha](https://github.com/subhash-jhaa). Licensed under the ISC License. Special thanks to the open-source community for the amazing tools that made this possible.
