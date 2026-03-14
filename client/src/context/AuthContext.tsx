@@ -31,22 +31,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const hasSessionIndicator = typeof document !== 'undefined' && document.cookie.includes('client_session=true');
 
         if (!hasSessionIndicator) {
-            console.log('No session indicator found, skipping initial auth check.');
+            console.log('🔍 [AuthCheck] No session indicator, marking as guest');
             setIsLoading(false);
             return;
         }
+
+        console.log('🔍 [AuthCheck] Verifying session with backend...');
 
         try {
             const { data } = await api.get('/user/data', {
                 headers: { 'x-auth-check': 'true' } // Tells the interceptor to be silent
             });
             if (data.success) {
+                console.log('✅ [AuthCheck] Session valid:', data.userData.email);
                 setUser(data.userData);
             }
         } catch (error) {
             // Silently fail: the user is not logged in or session expired
-            console.log('Initial auth check: No active session');
+            console.log('❌ [AuthCheck] No active session or verification failed');
             setUser(null);
+            // Clear indicator if server says no
+            document.cookie = 'client_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
         } finally {
             setIsLoading(false);
         }
@@ -67,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 router.push('/dashboard');
             }
         } catch (error) {
+            setIsLoading(false);
             toast.error(getErrorMessage(error, 'Login failed'));
             throw error;
         }

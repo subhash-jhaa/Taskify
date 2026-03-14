@@ -38,6 +38,7 @@ export const register = async (req: Request, res: Response) => {
             }
         });
 
+        // 🚀 Await the token cookies setup or any session state before returning
         setTokenCookies(res, accessToken, refreshToken);
 
         // Send welcome email in the background without awaiting
@@ -86,11 +87,12 @@ export const login = async (req: Request, res: Response) => {
         const accessToken = generateAccessToken(user.id)
         const refreshToken = generateRefreshToken(user.id)
 
-        // Background the refresh token update to speed up login response
-        prisma.user.update({
+        // 🚀 CRITICAL: Await this update. If backgrounded, subsequent requests
+        // might hit the DB before this write finishes, causing 'Invalid session' (401).
+        await prisma.user.update({
             where: { id: user.id },
             data: { refreshToken }
-        }).catch(err => console.error('❌ Background refresh token update failed:', err));
+        });
 
         setTokenCookies(res, accessToken, refreshToken);
 
@@ -152,7 +154,7 @@ export const refresh = async (req: Request, res: Response) => {
         return res.json({ success: true, message: "Session updated" });
 
     } catch (error: any) {
-        return res.json({ success: false, message: error.message });
+        return res.status(401).json({ success: false, message: error.message || 'Session expired' });
     }
 }
 

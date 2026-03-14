@@ -30,11 +30,16 @@ api.interceptors.response.use(
 
                 // Retry the original request
                 return api(originalRequest);
-            } catch (refreshError) {
-                // Refresh failed (refresh token expired)
-                console.warn('Session expired: Refresh token also invalid.');
+            } catch (refreshError: any) {
+                // Refresh failed (refresh token expired or server returned error)
+                const errorMessage = refreshError.response?.data?.message || refreshError.message || 'Session expired';
+                console.warn('Authentication failed:', errorMessage);
 
-                // 🚀 Redirect to login page immediately
+                // 🚀 Clear local indicator and redirect
+                if (typeof document !== 'undefined') {
+                    document.cookie = 'client_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                }
+
                 if (typeof window !== 'undefined') {
                     window.location.href = '/login';
                 }

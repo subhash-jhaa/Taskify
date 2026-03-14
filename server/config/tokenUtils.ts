@@ -16,7 +16,7 @@ export function setTokenCookies(res: Response, accessToken: string, refreshToken
     const cookieOptions = {
         httpOnly: true, // Prevents client-side scripts from accessing the cookie (XSS protection)
         secure: isProduction, // Ensures cookie is only sent over HTTPS in production
-        sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax', // 'none' allows cross-origin requests needed for Vercel -> Render
+        sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax', // 'none' allows cross-origin requests, 'lax' is better for localhost
         path: '/', // Makes the cookie available across the entire site
     };
 
