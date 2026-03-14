@@ -25,13 +25,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const checkAuth = async () => {
+        // 🚀 Check for the non-httpOnly 'client_session' indicator first
+        // This avoids making a network request if no session exists locally
+        const hasSessionIndicator = typeof document !== 'undefined' && document.cookie.includes('client_session=true');
+
+        if (!hasSessionIndicator) {
+            console.log('No session indicator found, skipping initial auth check.');
+            setIsLoading(false);
+            return;
+        }
+
         try {
-            const { data } = await api.get('/user/data');
+            const { data } = await api.get('/user/data', {
+                headers: { 'x-auth-check': 'true' } // Tells the interceptor to be silent
+            });
             if (data.success) {
                 setUser(data.userData);
             }
-        } catch {
-            console.log('No active session found');
+        } catch (error) {
+            // Silently fail: the user is not logged in or session expired
+            console.log('Initial auth check: No active session');
+            setUser(null);
         } finally {
             setIsLoading(false);
         }

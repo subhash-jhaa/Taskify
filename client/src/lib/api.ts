@@ -11,6 +11,11 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
+        // 🛡️ Skip refresh flow for the initial auth check to avoid console noise
+        if (originalRequest.headers?.['x-auth-check']) {
+            return Promise.reject(error);
+        }
+
         // If error is 401 and we haven't retried yet
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
@@ -27,7 +32,13 @@ api.interceptors.response.use(
                 return api(originalRequest);
             } catch (refreshError) {
                 // Refresh failed (refresh token expired)
-                console.log('Refresh token expired');
+                console.warn('Session expired: Refresh token also invalid.');
+
+                // 🚀 Redirect to login page immediately
+                if (typeof window !== 'undefined') {
+                    window.location.href = '/login';
+                }
+
                 return Promise.reject(refreshError);
             }
         }

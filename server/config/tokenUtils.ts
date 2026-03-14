@@ -31,6 +31,14 @@ export function setTokenCookies(res: Response, accessToken: string, refreshToken
         ...cookieOptions,
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7-day lifespan for persistent login session
     });
+
+    // 🚀 Non-httpOnly indicator for the client to check session presence locally
+    res.cookie('client_session', 'true', {
+        secure: isProduction,
+        sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: '/',
+    });
 }
 
 // Clear cookies using the same security options as when they were set
@@ -46,4 +54,5 @@ export function clearTokenCookies(res: Response) {
 
     res.clearCookie('accessToken', cookieOptions);
     res.clearCookie('refreshToken', cookieOptions);
+    res.clearCookie('client_session', cookieOptions);
 }
