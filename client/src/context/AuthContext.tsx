@@ -22,6 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Load user on mount
     useEffect(() => {
+        console.log('🔄 [AuthContext] Provider mounted');
         checkAuth();
     }, []);
 

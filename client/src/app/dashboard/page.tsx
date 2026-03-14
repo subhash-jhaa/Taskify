@@ -10,7 +10,9 @@ import { CheckCircle2, Circle, Clock, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
-  const { isLoading: authLoading, isAuthorized } = useProtectedRoute();
+  // Redundant: ProtectedRoute component in DashboardLayout already handles this
+  // const { isLoading: authLoading, isAuthorized } = useProtectedRoute();
+  const isAuthorized = true; // Still needed for the query 'enabled' flag to be truthy once mounted in layout
 
   const { data: statsData } = useQuery({
     queryKey: ['task-stats'],
