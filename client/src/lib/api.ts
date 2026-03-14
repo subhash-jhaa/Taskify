@@ -1,7 +1,14 @@
 import axios from 'axios';
 
+// Use relative URL in production to leverage Next.js rewrites (proxy)
+// This solves cross-site cookie blocking between Vercel and Render
+const isProduction = process.env.NODE_ENV === 'production';
+const apiBaseURL = isProduction 
+    ? '/api' 
+    : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001/api');
+
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001/api',
+    baseURL: apiBaseURL,
     withCredentials: true,
 });
 
