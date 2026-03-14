@@ -10,7 +10,8 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
     const accessToken = request.cookies.get('accessToken')?.value;
     const refreshToken = request.cookies.get('refreshToken')?.value;
-    const isAuthenticated = !!(accessToken || refreshToken);
+    const clientSession = request.cookies.get('client_session')?.value;
+    const isAuthenticated = !!(accessToken || refreshToken || clientSession);
 
     const { pathname } = request.nextUrl;
 
