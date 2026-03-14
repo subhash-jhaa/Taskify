@@ -86,10 +86,11 @@ export const login = async (req: Request, res: Response) => {
         const accessToken = generateAccessToken(user.id)
         const refreshToken = generateRefreshToken(user.id)
 
-        await prisma.user.update({
+        // Background the refresh token update to speed up login response
+        prisma.user.update({
             where: { id: user.id },
             data: { refreshToken }
-        });
+        }).catch(err => console.error('❌ Background refresh token update failed:', err));
 
         setTokenCookies(res, accessToken, refreshToken);
 
