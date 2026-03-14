@@ -9,26 +9,41 @@ export function generateRefreshToken(userId: string) {
     return jwt.sign({ userId }, process.env.JWT_REFRESH_SECRET!, { expiresIn: '7d' })
 }
 
-// set both tokens as httpOnly cookies so JS can't read them
+// Set both tokens as secure, cross-origin cookies
 export function setTokenCookies(res: Response, accessToken: string, refreshToken: string) {
-    const isProduction = process.env.NODE_ENV === 'production'
+    const isProduction = process.env.NODE_ENV === 'production';
 
+    const cookieOptions = {
+        httpOnly: true, // Prevents client-side scripts from accessing the cookie (XSS protection)
+        secure: isProduction, // Ensures cookie is only sent over HTTPS in production
+        sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax', // 'none' allows cross-origin requests needed for Vercel -> Render
+        path: '/', // Makes the cookie available across the entire site
+    };
+
+    // Access Token Cookie
     res.cookie('accessToken', accessToken, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? 'none' : 'lax',
-        maxAge: 15 * 60 * 1000 // 15 minutes
-    })
+        ...cookieOptions,
+        maxAge: 15 * 60 * 1000 // Short lifespan for the primary access token (15 mins)
+    });
 
+    // Refresh Token Cookie
     res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? 'none' : 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    })
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7-day lifespan for persistent login session
+    });
 }
 
+// Clear cookies using the same security options as when they were set
 export function clearTokenCookies(res: Response) {
-    res.clearCookie('accessToken')
-    res.clearCookie('refreshToken')
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    const cookieOptions = {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+        path: '/',
+    };
+
+    res.clearCookie('accessToken', cookieOptions);
+    res.clearCookie('refreshToken', cookieOptions);
 }
