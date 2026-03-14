@@ -93,5 +93,192 @@ npm run dev
 
 ---
 
+## 🚀 API Documentation
+
+### Authentication
+This API uses cookie-based JWT authentication. Upon successful login, an HTTP-only `token` cookie is set in the browser. This cookie must be included in the headers of all subsequent requests to protected endpoints to maintain the session.
+
+---
+
+### Auth Endpoints
+
+#### `POST /auth/register`
+Register a new user account.
+- **Headers**: `Content-Type: application/json`
+- **Request Body**:
+  ```json
+  {
+    "name": "Subhash Jha",
+    "email": "subhash@example.com",
+    "password": "securePassword123"
+  }
+  ```
+- **Success Response (201 Created)**:
+  ```json
+  {
+    "success": true,
+    "message": "User registered successfully"
+  }
+  ```
+- **Error Response (400 Bad Request)**:
+  ```json
+  {
+    "success": false,
+    "message": "Email already exists"
+  }
+  ```
+
+#### `POST /auth/login`
+Authenticate user and set session cookie.
+- **Headers**: `Content-Type: application/json`
+- **Request Body**:
+  ```json
+  {
+    "email": "subhash@example.com",
+    "password": "securePassword123"
+  }
+  ```
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "message": "Logged in successfully",
+    "user": {
+      "id": "user_67890",
+      "name": "Subhash Jha",
+      "email": "subhash@example.com"
+    }
+  }
+  ```
+- **Error Response (401 Unauthorized)**:
+  ```json
+  {
+    "success": false,
+    "message": "Invalid email or password"
+  }
+  ```
+
+#### `POST /auth/logout`
+Clear the authentication session cookie.
+- **Headers**: `Cookie: token={jwt_token}`
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "message": "Logged out successfully"
+  }
+  ```
+
+---
+
+### Task Endpoints
+
+#### `GET /tasks`
+Retrieve a filtered and paginated list of tasks for the authenticated user.
+- **Headers**: `Cookie: token={jwt_token}`
+- **Query Parameters**:
+
+| Parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `page` | `number` | `1` | The page number to retrieve (min: 1) |
+| `limit` | `number` | `10` | Number of tasks per page (min: 1, max: 50) |
+| `status` | `string` | - | Filter by `TODO`, `IN_PROGRESS`, or `COMPLETED` |
+| `search` | `string` | - | Case-insensitive search on task titles |
+
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "task_12345",
+        "title": "Implement AES Encryption",
+        "description": "Add CBC mode encryption for task payloads",
+        "status": "COMPLETED",
+        "createdAt": "2024-03-14T10:00:00Z"
+      }
+    ],
+    "meta": {
+      "total": 45,
+      "page": 1,
+      "limit": 10,
+      "totalPages": 5
+    }
+  }
+  ```
+- **Error Response (400 Bad Request)**:
+  ```json
+  {
+    "success": false,
+    "message": "Invalid limit. Must be a number between 1 and 50."
+  }
+  ```
+
+#### `POST /tasks`
+Create a new task for the authenticated user.
+- **Headers**: `Cookie: token={jwt_token}`, `Content-Type: application/json`
+- **Request Body**:
+  ```json
+  {
+    "title": "Refactor Middleware",
+    "description": "Clean up error handling in encryption middleware",
+    "status": "TODO"
+  }
+  ```
+- **Success Response (201 Created)**:
+  ```json
+  {
+    "success": true,
+    "message": "Task created successfully",
+    "task": {
+      "id": "task_12346",
+      "title": "Refactor Middleware",
+      "status": "TODO"
+    }
+  }
+  ```
+
+#### `PUT /tasks/:id`
+Update an existing task's details or status.
+- **Headers**: `Cookie: token={jwt_token}`, `Content-Type: application/json`
+- **Request Body**:
+  ```json
+  {
+    "title": "Refactor Middleware",
+    "status": "IN_PROGRESS"
+  }
+  ```
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "message": "Task updated successfully",
+    "task": {
+      "id": "task_12346",
+      "status": "IN_PROGRESS"
+    }
+  }
+  ```
+- **Error Response (404 Not Found)**:
+  ```json
+  {
+    "success": false,
+    "message": "Task not found"
+  }
+  ```
+
+#### `DELETE /tasks/:id`
+Permanently delete a specific task.
+- **Headers**: `Cookie: token={jwt_token}`
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "message": "Task deleted successfully"
+  }
+  ```
+
+---
+
 ## 📜 License & Acknowledgements
 Built by [Subhash Jha](https://github.com/subhash-jhaa). Licensed under the ISC License. Special thanks to the open-source community for the amazing tools that made this possible.
