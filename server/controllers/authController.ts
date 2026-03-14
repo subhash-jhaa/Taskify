@@ -45,17 +45,17 @@ export const register = async (req: Request, res: Response) => {
 
         setTokenCookies(res, finalAccessToken, finalRefreshToken);
 
-        try {
-            await transporter.sendMail({
-                from: `"Taskify" <${process.env.SENDER_EMAIL}>`,
-                to: email,
-                subject: 'Welcome to Taskify!',
-                html: `<h2>Welcome, ${name}!</h2><p>Thanks for signing up. Start managing your tasks now.</p>`
-            })
+        // Send welcome email in the background without awaiting
+        transporter.sendMail({
+            from: `"Taskify" <${process.env.SENDER_EMAIL}>`,
+            to: email,
+            subject: 'Welcome to Taskify!',
+            html: `<h2>Welcome, ${name}!</h2><p>Thanks for signing up. Start managing your tasks now.</p>`
+        }).then(() => {
             console.log(`✅ Welcome email sent to ${email}`);
-        } catch (emailErr) {
-            console.error('❌ welcome email failed to send:', emailErr)
-        }
+        }).catch((emailErr) => {
+            console.error('❌ welcome email failed to send:', emailErr);
+        });
 
         return res.status(201).json({ success: true, message: "User registered successfully" });
     } catch (error: any) {
