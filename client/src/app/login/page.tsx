@@ -18,6 +18,8 @@ export default function LoginPage() {
         try {
             await login({ email, password });
         } catch (error) {
+            console.error(error);
+        } finally {
             setIsSubmitting(false);
         }
     };

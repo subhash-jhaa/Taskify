@@ -61,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 
                 // Use the returned user data directly
                 setUser(data.user);
+                setIsLoading(false);
                 
                 toast.success('LoggedIn Successfully');
                 router.push('/dashboard');
@@ -80,6 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 
                 // Use the returned user data directly
                 setUser(data.user);
+                setIsLoading(false);
                 
                 toast.success('Registration successful! Welcome aboard.');
                 router.push('/dashboard');

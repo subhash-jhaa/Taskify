@@ -19,6 +19,8 @@ export default function RegisterPage() {
         try {
             await register({ name, email, password });
         } catch (error) {
+            console.error(error);
+        } finally {
             setIsSubmitting(false);
         }
     };
