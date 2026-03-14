@@ -6,6 +6,7 @@ import transporter from '../config/nodemailer.js'
 import { generateAccessToken, generateRefreshToken, setTokenCookies, clearTokenCookies } from '../config/tokenUtils.js'
 
 export const register = async (req: Request, res: Response) => {
+    console.log('📝 Registration payload:', req.body);
     const { name, email, password } = req.body
 
     if (!name || !email || !password) {
