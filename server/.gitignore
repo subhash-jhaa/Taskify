@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+/dist
+/build
+
+# Environment variables
+.env
+.env.production
+.env.test
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Prisma
+# (Migrations are typically tracked, removed from ignore)
+# /prisma/migrations (uncomment if you really want to ignore them)
