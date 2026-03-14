@@ -2,14 +2,22 @@ import axios from 'axios';
 
 // Use relative URL in production to leverage Next.js rewrites (proxy)
 // This solves cross-site cookie blocking between Vercel and Render
-const isProduction = process.env.NODE_ENV === 'production';
-const apiBaseURL = isProduction 
-    ? '/api' 
-    : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001/api');
+const isLocal = typeof window !== 'undefined' && window.location.host.includes('localhost');
+const apiBaseURL = !isLocal 
+    ? '/api/' 
+    : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001/api/');
 
 const api = axios.create({
     baseURL: apiBaseURL,
     withCredentials: true,
+});
+
+// Request interceptor for debugging
+api.interceptors.request.use((config) => {
+    if (typeof window !== 'undefined') {
+        console.log(`🚀 [API Request] ${config.method?.toUpperCase()} ${config.baseURL}/${config.url}`);
+    }
+    return config;
 });
 
 // Response interceptor to handle errors and silent refresh
@@ -30,7 +38,7 @@ api.interceptors.response.use(
             try {
                 // Attempt to refresh token
                 await axios.post(
-                    `${api.defaults.baseURL}/auth/refresh`,
+                    `${api.defaults.baseURL}auth/refresh`,
                     {},
                     { withCredentials: true }
                 );
