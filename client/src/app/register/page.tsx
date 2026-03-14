@@ -30,13 +30,13 @@ export default function RegisterPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="w-full max-w-md p-8 glass rounded-2xl shadow-2xl"
             >
-                <div className="flex flex-col items-center mb-8">
-                    <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center mb-4">
+                <Link href="/" className="flex flex-col items-center mb-8 group hover:opacity-80 transition-opacity">
+                    <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
                         <UserPlus className="text-primary w-6 h-6" />
                     </div>
                     <h1 className="text-3xl font-bold gradient-text">Join Taskify</h1>
-                    <p className="text-muted-foreground mt-2">Start organizing your life today</p>
-                </div>
+                    <p className="text-muted-foreground mt-2 text-center">Start organizing your life today</p>
+                </Link>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="space-y-2">

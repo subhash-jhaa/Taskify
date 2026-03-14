@@ -29,13 +29,13 @@ export default function LoginPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-md p-8 glass rounded-2xl shadow-2xl"
             >
-                <div className="flex flex-col items-center mb-8">
-                    <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center mb-4">
+                <Link href="/" className="flex flex-col items-center mb-8 group hover:opacity-80 transition-opacity">
+                    <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
                         <LogIn className="text-primary w-6 h-6" />
                     </div>
                     <h1 className="text-3xl font-bold gradient-text">Welcome Back</h1>
-                    <p className="text-muted-foreground mt-2">Login to manage your tasks</p>
-                </div>
+                    <p className="text-muted-foreground mt-2 text-center">Login to manage your tasks</p>
+                </Link>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
