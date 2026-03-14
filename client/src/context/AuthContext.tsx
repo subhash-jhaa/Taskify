@@ -8,8 +8,9 @@ import { User, AuthContextType, LoginCredentials, RegisterInput } from '@/types/
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function getErrorMessage(error: unknown, fallback: string) {
+function getErrorMessage(error: any, fallback: string) {
     if (typeof error === 'string' && error.trim()) return error;
+    if (error?.message && typeof error.message === 'string' && error.message.trim()) return error.message;
     if (error instanceof Error && error.message.trim()) return error.message;
     return fallback;
 }
