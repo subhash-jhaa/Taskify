@@ -94,10 +94,17 @@ export const getTaskById = async (req: Request, res: Response): Promise<Response
         const { id } = req.params;
         const userId = req.userId;
 
-        const task = await prisma.task.findFirst({ where: { id: id as string, userId: userId as string } });
+        // Fetch task without userId filter first to check for existence
+        const task = await prisma.task.findUnique({ where: { id: id as string } });
 
         if (!task) {
             return res.status(404).json({ success: false, message: "Task not found" });
+        }
+
+        // 🛡️ Authorization Check: Prevents IDOR (Insecure Direct Object Reference) attacks
+        // If a user knows a valid Task ID, they still cannot read the data unless they own it.
+        if (task.userId !== userId) {
+            return res.status(403).json({ success: false, message: "Forbidden: You do not have permission to access this task" });
         }
 
         return res.status(200).json({ success: true, task });
@@ -113,17 +120,26 @@ export const updateTask = async (req: Request, res: Response): Promise<Response>
         const { title, description, status } = req.body;
         const userId = req.userId;
 
-        const existing = await prisma.task.findFirst({ where: { id: id as string, userId: userId as string } });
+        // Fetch task globally to verify ownership before mutation
+        const existing = await prisma.task.findUnique({ where: { id: id as string } });
+        
         if (!existing) {
             return res.status(404).json({ success: false, message: "Task not found" });
+        }
+
+        // 🛡️ Authorization Check: Ensures a user can only update their own resources
+        // This prevents malicious users from modifying data belonging to others via ID tampering.
+        if (existing.userId !== userId) {
+            return res.status(403).json({ success: false, message: "Forbidden: You cannot update someone else's task" });
         }
 
         const taskStatus = status
             ? (status.toUpperCase().replace('-', '_') as TaskStatus)
             : existing.status;
 
+        // Use redundant userId check in the where clause for defense-in-depth
         const task = await prisma.task.update({
-            where: { id: id as string },
+            where: { id: id as string, userId: userId as string },
             data: { title, description, status: taskStatus as TaskStatus }
         });
 
@@ -139,12 +155,19 @@ export const deleteTask = async (req: Request, res: Response): Promise<Response>
         const { id } = req.params;
         const userId = req.userId;
 
-        const existing = await prisma.task.findFirst({ where: { id: id as string, userId: userId as string } });
+        const existing = await prisma.task.findUnique({ where: { id: id as string } });
+        
         if (!existing) {
             return res.status(404).json({ success: false, message: "Task not found" });
         }
 
-        await prisma.task.delete({ where: { id: id as string } });
+        // 🛡️ Authorization Check: Verifies user has authority to delete this specific resource
+        if (existing.userId !== userId) {
+            return res.status(403).json({ success: false, message: "Forbidden: You cannot delete someone else's task" });
+        }
+
+        // Redundant filter for safety
+        await prisma.task.delete({ where: { id: id as string, userId: userId as string } });
 
         return res.status(200).json({ success: true, message: "Task deleted successfully" });
     } catch (error: any) {
@@ -158,10 +181,15 @@ export const toggleTaskStatus = async (req: Request, res: Response): Promise<Res
         const { id } = req.params;
         const userId = req.userId;
 
-        const task = await prisma.task.findFirst({ where: { id: id as string, userId: userId as string } });
+        const task = await prisma.task.findUnique({ where: { id: id as string } });
 
         if (!task) {
             return res.status(404).json({ success: false, message: "Task not found" });
+        }
+
+        // 🛡️ Authorization Check: Protects against unauthorized state transitions
+        if (task.userId !== userId) {
+            return res.status(403).json({ success: false, message: "Forbidden: You cannot toggle someone else's task status" });
         }
 
         const statusCycle: Record<TaskStatus, TaskStatus> = {
@@ -173,7 +201,7 @@ export const toggleTaskStatus = async (req: Request, res: Response): Promise<Res
         const newStatus = statusCycle[task.status];
 
         const updatedTask = await prisma.task.update({
-            where: { id: id as string },
+            where: { id: id as string, userId: userId as string },
             data: { status: newStatus as TaskStatus }
         });
 
