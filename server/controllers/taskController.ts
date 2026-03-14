@@ -75,7 +75,7 @@ export const getTasks = async (req: Request, res: Response): Promise<Response> =
         // 4. Structured response with meta
         return res.status(200).json({
             success: true,
-            data: tasks,
+            tasks: tasks,
             meta: {
                 total: totalTasks,
                 page: pageNum,
