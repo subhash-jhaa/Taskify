@@ -18,7 +18,8 @@ export const register = async (req: Request, res: Response) => {
             return res.status(400).json({ success: false, message: "User already exists" });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        // Hash the password with bcrypt using 12 salt rounds before saving to the database
+        const hashedPassword = await bcrypt.hash(password, 12);
 
         const accessToken = generateAccessToken('temp');
         const refreshToken = generateRefreshToken('temp');
@@ -75,6 +76,7 @@ export const login = async (req: Request, res: Response) => {
         if (!user) {
             return res.status(401).json({ success: false, message: "Invalid credentials" });
         }
+        // Compare the provided plain-text password with the stored hashed password using bcrypt.compare()
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ success: false, message: "Invalid credentials" });
@@ -296,7 +298,8 @@ export const resetPassword = async (req: Request, res: Response): Promise<Respon
             return res.status(400).json({ success: false, message: "OTP expired" });
         }
 
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        // Hash the new password with bcrypt using 12 salt rounds before updating the database
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
 
         await prisma.user.update({
             where: { id: user.id },
