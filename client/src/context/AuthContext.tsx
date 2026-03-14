@@ -56,8 +56,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             const { data } = await api.post('/auth/login', credentials);
             if (data.success) {
+                // 🚀 Set the session indicator manually
+                document.cookie = 'client_session=true; path=/; max-age=604800'; // 7 days
+                
+                // Use the returned user data directly
+                setUser(data.user);
+                
                 toast.success('LoggedIn Successfully');
-                await checkAuth();
                 router.push('/dashboard');
             }
         } catch (error) {
@@ -70,8 +75,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             const { data } = await api.post('/auth/register', userData);
             if (data.success) {
+                // 🚀 Set the session indicator manually to avoid waiting for cookies to propagate
+                document.cookie = 'client_session=true; path=/; max-age=604800'; // 7 days
+                
+                // Use the returned user data directly
+                setUser(data.user);
+                
                 toast.success('Registration successful! Welcome aboard.');
-                await checkAuth();
                 router.push('/dashboard');
             }
         } catch (error) {

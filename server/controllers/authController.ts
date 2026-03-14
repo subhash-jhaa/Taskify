@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
 import { Request, Response } from 'express'
 import prisma from '../config/prisma.js'
 import transporter from '../config/nodemailer.js'
@@ -19,14 +20,17 @@ export const register = async (req: Request, res: Response) => {
             return res.status(400).json({ success: false, message: "User already exists" });
         }
 
-        // Hash the password with bcrypt using 12 salt rounds before saving to the database
-        const hashedPassword = await bcrypt.hash(password, 12);
+        // Hash the password with bcrypt using 10 salt rounds for optimal speed/security balance
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        const accessToken = generateAccessToken('temp');
-        const refreshToken = generateRefreshToken('temp');
+        // Pre-generate UUID to allow single-write creation with tokens
+        const userId = crypto.randomUUID();
+        const accessToken = generateAccessToken(userId);
+        const refreshToken = generateRefreshToken(userId);
 
         const user = await prisma.user.create({
             data: {
+                id: userId,
                 name,
                 email,
                 password: hashedPassword,
@@ -34,16 +38,7 @@ export const register = async (req: Request, res: Response) => {
             }
         });
 
-        // Re-generate tokens with real ID
-        const finalAccessToken = generateAccessToken(user.id);
-        const finalRefreshToken = generateRefreshToken(user.id);
-
-        await prisma.user.update({
-            where: { id: user.id },
-            data: { refreshToken: finalRefreshToken }
-        });
-
-        setTokenCookies(res, finalAccessToken, finalRefreshToken);
+        setTokenCookies(res, accessToken, refreshToken);
 
         // Send welcome email in the background without awaiting
         transporter.sendMail({
@@ -57,7 +52,12 @@ export const register = async (req: Request, res: Response) => {
             console.error('❌ welcome email failed to send:', emailErr);
         });
 
-        return res.status(201).json({ success: true, message: "User registered successfully" });
+        const { password: _, refreshToken: __, ...userData } = user;
+        return res.status(201).json({ 
+            success: true, 
+            message: "User registered successfully",
+            user: userData
+        });
     } catch (error: any) {
         return res.status(500).json({ success: false, message: "Error in registering user", error: error.message });
     }
@@ -93,7 +93,12 @@ export const login = async (req: Request, res: Response) => {
 
         setTokenCookies(res, accessToken, refreshToken);
 
-        return res.status(200).json({ success: true, message: "Login successful" });
+        const { password: _, refreshToken: __, ...userData } = user;
+        return res.status(200).json({ 
+            success: true, 
+            message: "Login successful",
+            user: userData
+        });
     } catch (error: any) {
         return res.status(500).json({ success: false, message: "Error in logging in", error: error.message });
     }
