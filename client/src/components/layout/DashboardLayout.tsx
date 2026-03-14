@@ -32,12 +32,12 @@ function SidebarContent({
     return (
         <div className="flex flex-col h-full bg-background/50">
             <div className="flex items-center justify-between mb-10 px-2 mt-4 md:mt-0">
-                <div className="flex items-center gap-3">
+                <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                     <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
                         <ListTodo className="text-primary-foreground w-6 h-6" />
                     </div>
                     <span className="text-2xl font-bold gradient-text">Taskify</span>
-                </div>
+                </Link>
                 <ModeToggle />
             </div>
 
@@ -114,10 +114,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             {/* Mobile Header */}
             <header className="md:hidden flex items-center justify-between p-4 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-40">
-                <div className="flex items-center gap-2">
+                <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                     <ListTodo className="text-primary w-6 h-6" />
                     <span className="text-xl font-bold gradient-text">Taskify</span>
-                </div>
+                </Link>
                 <div className="flex items-center gap-2">
                     <ModeToggle />
                     <Sheet open={open} onOpenChange={setOpen}>
