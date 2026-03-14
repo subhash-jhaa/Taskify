@@ -18,7 +18,7 @@ export default function TaskCard({ task, onUpdate }: TaskCardProps) {
 
     const toggleStatus = async () => {
         try {
-            const { data } = await api.patch(`/tasks/${task.id}/toggle`);
+            const { data } = await api.patch(`tasks/${task.id}/toggle`);
             if (data.success) {
                 toast.success(`Task marked as ${data.task.status}`);
                 onUpdate?.();
@@ -32,7 +32,7 @@ export default function TaskCard({ task, onUpdate }: TaskCardProps) {
         if (!confirm('Are you sure you want to delete this task?')) return;
         setIsDeleting(true);
         try {
-            const { data } = await api.delete(`/tasks/${task.id}`);
+            const { data } = await api.delete(`tasks/${task.id}`);
             if (data.success) {
                 toast.success('Task deleted');
                 onUpdate?.();

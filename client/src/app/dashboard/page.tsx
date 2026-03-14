@@ -17,7 +17,7 @@ export default function DashboardPage() {
   const { data: statsData } = useQuery({
     queryKey: ['task-stats'],
     queryFn: async () => {
-      const { data } = await api.get('/tasks/stats');
+      const { data } = await api.get('tasks/stats');
       return data.stats;
     },
     enabled: isAuthorized,

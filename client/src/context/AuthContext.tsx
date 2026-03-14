@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('🔍 [AuthCheck] Verifying session with backend...');
 
         try {
-            const { data } = await api.get('/user/data', {
+            const { data } = await api.get('user/data', {
                 headers: { 'x-auth-check': 'true' } // Tells the interceptor to be silent
             });
             if (data.success) {
@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const login = async (credentials: LoginCredentials) => {
         try {
-            const { data } = await api.post('/auth/login', credentials);
+            const { data } = await api.post('auth/login', credentials);
             if (data.success) {
                 // 🚀 Set the session indicator manually
                 document.cookie = 'client_session=true; path=/; max-age=604800'; // 7 days
@@ -81,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const register = async (userData: RegisterInput) => {
         try {
-            const { data } = await api.post('/auth/register', userData);
+            const { data } = await api.post('auth/register', userData);
             if (data.success) {
                 // 🚀 Set the session indicator manually to avoid waiting for cookies to propagate
                 document.cookie = 'client_session=true; path=/; max-age=604800'; // 7 days
@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const logout = async () => {
         try {
-            await api.post('/auth/logout');
+            await api.post('auth/logout');
             setUser(null);
             // 🚀 Clear the client-side session indicator
             document.cookie = 'client_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const refresh = async () => {
         try {
-            await api.post('/auth/refresh');
+            await api.post('auth/refresh');
             await checkAuth();
         } catch {
             setUser(null);

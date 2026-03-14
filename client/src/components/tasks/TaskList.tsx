@@ -22,7 +22,7 @@ export default function TaskList({ status, search, limit }: TaskListProps = {}) 
             if (search) params.search = search;
             if (limit) params.limit = limit;
 
-            const { data } = await api.get('/tasks', { params });
+            const { data } = await api.get('tasks', { params });
             return data.tasks as Task[];
         },
     });

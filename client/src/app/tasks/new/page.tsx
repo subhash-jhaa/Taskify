@@ -20,7 +20,7 @@ export default function NewTaskPage() {
     const handleSubmit = async (data: any) => {
         setIsSubmitting(true);
         try {
-            const response = await api.post('/tasks', data);
+            const response = await api.post('tasks', data);
             if (response.data.success) {
                 toast.success('Task created successfully');
                 router.push('/tasks');
