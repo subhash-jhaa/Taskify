@@ -69,8 +69,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             const { data } = await api.post('/auth/register', userData);
             if (data.success) {
-                toast.success('Registration successful. Please login.');
-                router.push('/login');
+                toast.success('Registration successful! Welcome aboard.');
+                await checkAuth();
+                router.push('/dashboard');
             }
         } catch (error) {
             toast.error(getErrorMessage(error, 'Registration failed'));
