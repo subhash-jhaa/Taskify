@@ -38,6 +38,10 @@ app.get('/', (req: Request, res: Response) => {
     res.json({ status: 'ok', message: 'Taskify API is running 🚀' });
 });
 
+app.get('/api/health', (req: Request, res: Response) => {
+    res.json({ status: 'ok' });
+});
+
 // API Endpoints
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
