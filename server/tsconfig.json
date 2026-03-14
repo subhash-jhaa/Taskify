@@ -16,7 +16,12 @@
         ]
     },
     "include": [
-        "**/*.ts"
+        "controllers/**/*.ts",
+        "middleware/**/*.ts",
+        "routes/**/*.ts",
+        "utils/**/*.ts",
+        "config/**/*.ts",
+        "server.ts"
     ],
     "exclude": [
         "node_modules",
